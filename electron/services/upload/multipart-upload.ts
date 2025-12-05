@@ -203,7 +203,6 @@ export class MultipartUpload {
         }
       }
 
-      let uploadedBytes = completedParts.length * partSize;
       const videoBuffer = await fs.promises.readFile(videoPath);
 
       // Upload parts in batches
@@ -250,7 +249,6 @@ export class MultipartUpload {
           const partBuffer = videoBuffer.slice(startByte, endByte);
 
           const result = await uploadPart(uploadUrl, partBuffer, partNumber);
-          uploadedBytes += partBuffer.length;
           return result;
         });
 

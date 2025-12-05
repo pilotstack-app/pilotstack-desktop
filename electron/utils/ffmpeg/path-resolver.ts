@@ -162,7 +162,7 @@ export function getFFmpegPath(): string {
                 if (process.platform !== "win32") {
                   try {
                     fs.chmodSync(foundPath, 0o755);
-                  } catch (e) {
+                  } catch (_e) {
                     // Ignore chmod errors
                   }
                 }

@@ -64,7 +64,7 @@ export class CaptureLoop {
 
     try {
       await this.callback();
-    } catch (error) {
+    } catch (_error) {
       // Errors are handled by the callback
     }
 

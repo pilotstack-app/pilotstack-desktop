@@ -162,17 +162,17 @@ export async function finalizeSimpleHLS(
     });
 
     const ffmpegProcess = spawn(ffmpegPath, args);
-    let stderr = "";
+    let _stderr = "";
 
     ffmpegProcess.stderr.on("data", (data) => {
-      stderr += data.toString();
+      _stderr += data.toString();
     });
 
     ffmpegProcess.on("close", async (code) => {
       if (code === 0) {
         try {
           await fs.promises.rm(sessionFolder, { recursive: true, force: true });
-        } catch (e) {
+        } catch (_e) {
           // Ignore cleanup errors
         }
 

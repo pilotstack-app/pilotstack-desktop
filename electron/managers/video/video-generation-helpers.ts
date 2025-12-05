@@ -253,7 +253,7 @@ export async function runFrameBasedGeneration(
             recursive: true,
             force: true,
           });
-        } catch (e) {
+        } catch (_e) {
           // Cleanup errors are non-critical
         }
 
@@ -274,7 +274,7 @@ export async function runFrameBasedGeneration(
             const result = await onRetry();
             resolve(result);
             return;
-          } catch (retryError) {
+          } catch (_retryError) {
             // Fall through to error
           }
         }

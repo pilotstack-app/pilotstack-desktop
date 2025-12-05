@@ -58,7 +58,7 @@ export class ClipboardMonitor {
     try {
       const initialContent = clipboard.readText();
       this.lastClipboardContent = this.hashContent(initialContent);
-    } catch (e) {
+    } catch (_e) {
       this.lastClipboardContent = "";
     }
 
@@ -136,7 +136,7 @@ export class ClipboardMonitor {
   private unregisterPasteShortcuts(): void {
     try {
       // Cleanup if needed
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
   }
@@ -169,7 +169,7 @@ export class ClipboardMonitor {
 
         this.lastClipboardContent = currentHash;
       }
-    } catch (e) {
+    } catch (_e) {
       // Clipboard access can sometimes fail, ignore silently
       // This can happen during system clipboard operations
     }

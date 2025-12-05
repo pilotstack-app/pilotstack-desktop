@@ -227,7 +227,7 @@ export class RecordingsManager {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send(channel, data);
       }
-    } catch (error) {
+    } catch (_error) {
       // Window may have been closed
     }
   }

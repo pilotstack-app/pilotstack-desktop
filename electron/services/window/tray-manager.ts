@@ -241,7 +241,7 @@ export class TrayManager {
         // Clear badge when not recording
         app.dock.setBadge("");
       }
-    } catch (error) {
+    } catch (_error) {
       // Dock may not be available (e.g., in ghost mode when dock is hidden)
       // This is fine, just ignore the error
     }

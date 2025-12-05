@@ -245,7 +245,7 @@ export function getDiskUsage(): DiskUsage {
         const stats = fs.statSync(recording.videoPath);
         totalSize += stats.size;
         count++;
-      } catch (e) {
+      } catch (_e) {
         // Ignore errors
       }
     }

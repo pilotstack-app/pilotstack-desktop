@@ -253,7 +253,7 @@ export class VideoManager {
         store.delete("outputDirectory");
         return fallbackDir;
       }
-    } catch (error) {
+    } catch (_error) {
       const fallbackDir = app.getPath("videos");
       await fs.promises.mkdir(fallbackDir, { recursive: true });
       store.delete("outputDirectory");

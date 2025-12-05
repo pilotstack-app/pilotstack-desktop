@@ -181,7 +181,7 @@ async function validateAllFrames(sessionFolder: string): Promise<ValidationResul
     if (frame.filepath) {
       try {
         await fs.promises.unlink(frame.filepath);
-      } catch (e) {
+      } catch (_e) {
         // Ignore deletion errors
       }
     }

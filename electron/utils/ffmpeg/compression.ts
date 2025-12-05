@@ -291,7 +291,7 @@ export async function compressForUpload(
 
           try {
             await fs.promises.unlink(outputPath);
-          } catch (e) {
+          } catch (_e) {
             // Ignore cleanup errors
           }
 

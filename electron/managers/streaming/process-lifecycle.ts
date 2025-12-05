@@ -46,7 +46,7 @@ export async function closeProcess(process: ChildProcess | null): Promise<void> 
         logger.warn("FFmpeg process did not close, force killing");
         try {
           process.kill("SIGKILL");
-        } catch (e) {
+        } catch (_e) {
           // Ignore errors
         }
       }

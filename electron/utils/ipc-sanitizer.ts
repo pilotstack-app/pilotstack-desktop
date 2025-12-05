@@ -129,7 +129,7 @@ export function sanitizeForIPC(obj: any): any {
           }
         }
         return fallback;
-      } catch (e2) {
+      } catch (_e2) {
         return {};
       }
     }

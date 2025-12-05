@@ -52,12 +52,12 @@ function cleanupOldLogs(): void {
       logFiles.slice(MAX_LOG_FILES).forEach((file) => {
         try {
           fs.unlinkSync(file.path);
-        } catch (e) {
+        } catch (_e) {
           // Ignore errors
         }
       });
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore cleanup errors
   }
 }
@@ -74,7 +74,7 @@ function rotateLogIfNeeded(logFile: string): void {
         fs.renameSync(logFile, rotatedFile);
       }
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore rotation errors
   }
 }
@@ -162,7 +162,7 @@ export const logger = {
           };
         })
         .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   },
@@ -176,7 +176,7 @@ export const logger = {
       files.forEach((file) => {
         try {
           fs.unlinkSync(file.path);
-        } catch (e) {
+        } catch (_e) {
           // Ignore errors
         }
       });

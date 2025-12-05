@@ -98,7 +98,7 @@ export class ActivityManager {
     try {
       const mousePos = screen.getCursorScreenPoint();
       this.lastMousePosition = { x: mousePos.x, y: mousePos.y };
-    } catch (e) {
+    } catch (_e) {
       this.lastMousePosition = { x: 0, y: 0 };
     }
 
@@ -203,7 +203,7 @@ export class ActivityManager {
         mouseActive = dx > MIN_MOUSE_MOVEMENT || dy > MIN_MOUSE_MOVEMENT;
       }
       this.lastMousePosition = { x: mousePos.x, y: mousePos.y };
-    } catch (e) {
+    } catch (_e) {
       // Ignore mouse tracking errors
     }
 
