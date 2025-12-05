@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Screen Recording Permission -->
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>pilotstack needs screen capture access to record your creative workflow and generate timelapse videos.</string>
+    
+    <!-- Note: Audio and camera permissions removed for privacy -->
+    <!-- The app captures screen frames only, no audio or camera recording -->
+    
+    <!-- Accessibility Permission (for activity monitoring) -->
+    <key>NSAppleEventsUsageDescription</key>
+    <string>pilotstack monitors keyboard and mouse activity to calculate your active work time.</string>
+    
+    <!-- File Access -->
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>pilotstack saves recordings and temporary files to your Documents folder.</string>
+    
+    <!-- Downloads Folder -->
+    <key>NSDownloadsFolderUsageDescription</key>
+    <string>pilotstack can save exported videos to your Downloads folder.</string>
+    
+    <!-- Desktop Folder -->
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>pilotstack can save exported videos to your Desktop.</string>
+    
+    <!-- URL Scheme Handler -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>pilotstack URL</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>pilotstack</string>
+            </array>
+        </dict>
+    </array>
+    
+    <!-- High Resolution Capable -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    
+    <!-- Supports Secure Coding -->
+    <key>NSSupportsSecureCoding</key>
+    <true/>
+</dict>
+</plist>
+

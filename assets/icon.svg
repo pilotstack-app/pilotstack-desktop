@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners -->
+  <rect 
+    x="41" 
+    y="41" 
+    width="430" 
+    height="430" 
+    rx="77" 
+    ry="77" 
+    fill="#ff6b6b"
+    stroke="#1a1a1a"
+    stroke-width="15"
+  />
+  
+  <!-- Letter "P" -->
+  <text 
+    x="164" 
+    y="369" 
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" 
+    font-size="307px" 
+    font-weight="900" 
+    fill="#1a1a1a"
+  >P</text>
+  
+  <!-- Small decorative element (like a play/record indicator) -->
+  <circle 
+    cx="384" 
+    cy="128" 
+    r="30.72" 
+    fill="#ffffff"
+    stroke="#1a1a1a"
+    stroke-width="7.5"
+  />
+</svg>

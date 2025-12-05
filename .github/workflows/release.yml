@@ -1,0 +1,350 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
+  CSC_IDENTITY_AUTO_DISCOVERY: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install Python setuptools
+        run: pip install setuptools
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build packages
+        run: pnpm run build:packages
+      
+      - name: Build React app
+        run: pnpm run build:react
+      
+      - name: Build Electron TypeScript
+        run: pnpm run build:electron:ts
+      
+      - name: Build macOS (x64 & arm64)
+        run: pnpm exec electron-builder --mac --x64 --arm64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Generate hashes
+        id: hash
+        run: |
+          cd release
+          HASHES=""
+          for file in *.dmg *.zip; do
+            if [ -f "$file" ]; then
+              HASH=$(shasum -a 256 "$file" | cut -d' ' -f1)
+              HASHES="$HASHES$HASH  $file\n"
+            fi
+          done
+          echo "hashes<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$HASHES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: |
+            release/*.dmg
+            release/*.zip
+          retention-days: 7
+          
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install Python setuptools
+        run: pip install setuptools
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build packages
+        run: pnpm run build:packages
+      
+      - name: Build React app
+        run: pnpm run build:react
+      
+      - name: Build Electron TypeScript
+        run: pnpm run build:electron:ts
+      
+      - name: Build Windows (x64)
+        run: pnpm exec electron-builder --win --x64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Generate hashes
+        id: hash
+        shell: pwsh
+        run: |
+          $hashes = ""
+          Get-ChildItem -Path "release" -Include @("*.exe", "*.zip") -Recurse | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            $hashes += "$hash  $($_.Name)`n"
+          }
+          "hashes<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          $hashes | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: |
+            release/*.exe
+            release/*.zip
+          retention-days: 7
+          
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: Install Python setuptools
+        run: pip install setuptools
+      
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm libarchive-tools
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build packages
+        run: pnpm run build:packages
+      
+      - name: Build React app
+        run: pnpm run build:react
+      
+      - name: Build Electron TypeScript
+        run: pnpm run build:electron:ts
+      
+      - name: Build Linux (x64)
+        run: pnpm exec electron-builder --linux --x64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Generate hashes
+        id: hash
+        run: |
+          cd release
+          HASHES=""
+          for file in *.AppImage *.deb; do
+            if [ -f "$file" ]; then
+              HASH=$(sha256sum "$file" | cut -d' ' -f1)
+              HASHES="$HASHES$HASH  $file\n"
+            fi
+          done
+          echo "hashes<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$HASHES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: |
+            release/*.AppImage
+            release/*.deb
+          retention-days: 7
+
+  generate-sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          artifact-name: sbom.spdx.json
+          output-file: sbom.spdx.json
+          
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+          retention-days: 7
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-macos, build-windows, build-linux, generate-sbom]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: Display structure of downloaded files
+        run: ls -la artifacts/*/
+          
+      - name: Create checksums file
+        run: |
+          echo "# SHA256 Checksums" > artifacts/checksums.txt
+          echo "" >> artifacts/checksums.txt
+          echo "Verify your download by comparing the hash:" >> artifacts/checksums.txt
+          echo '```bash' >> artifacts/checksums.txt
+          echo "# macOS/Linux" >> artifacts/checksums.txt
+          echo "sha256sum <filename>" >> artifacts/checksums.txt
+          echo "" >> artifacts/checksums.txt
+          echo "# Windows (PowerShell)" >> artifacts/checksums.txt
+          echo 'Get-FileHash <filename> -Algorithm SHA256' >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "" >> artifacts/checksums.txt
+          
+          echo "## macOS" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "${{ needs.build-macos.outputs.hashes }}" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "" >> artifacts/checksums.txt
+          
+          echo "## Windows" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "${{ needs.build-windows.outputs.hashes }}" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "" >> artifacts/checksums.txt
+          
+          echo "## Linux" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          echo "${{ needs.build-linux.outputs.hashes }}" >> artifacts/checksums.txt
+          echo '```' >> artifacts/checksums.txt
+          
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: pilotstack Desktop ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            artifacts/release-macos/*
+            artifacts/release-windows/*
+            artifacts/release-linux/*
+            artifacts/sbom/sbom.spdx.json
+            artifacts/checksums.txt
+          body: |
+            ## Download
+            
+            | Platform | Download |
+            |----------|----------|
+            | macOS (Apple Silicon) | `pilotstack-${{ steps.version.outputs.version }}-mac-arm64.dmg` |
+            | macOS (Intel) | `pilotstack-${{ steps.version.outputs.version }}-mac-x64.dmg` |
+            | Windows | `pilotstack-${{ steps.version.outputs.version }}-win-x64.exe` |
+            | Linux | `pilotstack-${{ steps.version.outputs.version }}-x64.AppImage` |
+            
+            ## Verification
+            
+            All releases include SHA256 checksums. Download the `checksums.txt` file and verify your download:
+            
+            ```bash
+            # macOS/Linux
+            sha256sum -c checksums.txt 2>/dev/null | grep OK
+            
+            # Or verify a single file
+            sha256sum pilotstack-*.dmg
+            ```
+            
+            ## Security
+            
+            - **SBOM**: Review `sbom.spdx.json` for the complete list of dependencies
+            - **Source Code**: This release was built from commit ${{ github.sha }}
+            - **Build Logs**: Check the [Actions tab](https://github.com/${{ github.repository }}/actions) for build provenance
+            
+            ## What's Changed
+            
+            See the auto-generated release notes below for a full list of changes.

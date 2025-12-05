@@ -1,0 +1,245 @@
+{
+  "name": "pilotstack-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Open-source desktop app for pilotstack - Screen Recording & Timelapse Creator",
+  "author": {
+    "name": "pilotstack Team",
+    "email": "team@pilotstack.app"
+  },
+  "license": "MIT",
+  "main": "electron-dist/main.js",
+  "homepage": "./",
+  "packageManager": "pnpm@9.14.2",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"pnpm run dev:react\" \"pnpm run dev:electron\"",
+    "dev:react": "vite",
+    "dev:electron": "pnpm run build:electron:ts && wait-on http://localhost:5173 && electron .",
+    "build": "pnpm run build:packages && pnpm run build:electron",
+    "build:packages": "pnpm -r --filter @pilotstack/types --filter @pilotstack/verification run build",
+    "build:react": "vite build",
+    "build:electron:ts": "tsc --project tsconfig.electron.json",
+    "build:electron": "pnpm run build:electron:ts && pnpm run build:react && electron-builder",
+    "build:mac": "pnpm run build:packages && pnpm run build:electron:ts && vite build && electron-builder --mac",
+    "build:win": "pnpm run build:packages && pnpm run build:electron:ts && vite build && electron-builder --win",
+    "build:linux": "pnpm run build:packages && pnpm run build:electron:ts && vite build && electron-builder --linux",
+    "build:all": "pnpm run build:packages && pnpm run build:electron:ts && vite build && electron-builder -mwl",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit && tsc --noEmit --project tsconfig.electron.json",
+    "lint": "eslint src/ electron/",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@pilotstack/types": "workspace:*",
+    "@pilotstack/verification": "workspace:*",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9",
+    "framer-motion": "^11.13.1",
+    "lucide-react": "^0.468.0",
+    "pretty-ms": "^9.1.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "sharp": "^0.34.5",
+    "uiohook-napi": "^1.5.4",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.5.0",
+    "@types/node": "^20.17.0",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.39.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "turbo": "^2.3.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.1",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.pilotstack.app",
+    "productName": "pilotstack",
+    "copyright": "Copyright © 2025 pilotstack Team",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/sharp/**/*",
+      "node_modules/@ffmpeg-installer/**/*"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron-dist/**/*",
+      "!electron-dist/**/*.map",
+      "!electron/**/*.ts",
+      "!electron/**/*.map",
+      "!**/.turbo/**/*",
+      "!**/turbo-*.log"
+    ],
+    "extraMetadata": {
+      "main": "electron-dist/main.js"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "pilotstack-app",
+        "repo": "pilotstack-desktop",
+        "releaseType": "release"
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon_512.png",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "identity": null,
+      "extendInfo": "build/info.plist",
+      "darkModeSupport": true,
+      "minimumSystemVersion": "10.15.0",
+      "notarize": false,
+      "protocols": [
+        {
+          "name": "pilotstack",
+          "schemes": [
+            "pilotstack"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "sign": false,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon_512.png",
+      "publisherName": "pilotstack Team",
+      "verifyUpdateCodeSignature": false,
+      "signAndEditExecutable": false,
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "pilotstack",
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon_512.png",
+      "category": "Utility;AudioVideo;Video",
+      "maintainer": "pilotstack Team <team@pilotstack.app>",
+      "vendor": "pilotstack",
+      "synopsis": "Screen Recording & Timelapse Creator",
+      "description": "pilotstack Desktop - Record your creative workflow and generate beautiful timelapse videos to prove your work.",
+      "desktop": {
+        "StartupNotify": "true",
+        "Terminal": "false",
+        "Type": "Application",
+        "Categories": "Utility;AudioVideo;Video"
+      }
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "deb": {
+      "priority": "optional",
+      "compression": "xz"
+    },
+    "protocols": [
+      {
+        "name": "pilotstack",
+        "schemes": [
+          "pilotstack"
+        ]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": "pilotstack",
+        "name": "pilotstack Project",
+        "description": "pilotstack Recording Session",
+        "mimeType": "application/x-pilotstack",
+        "role": "Editor"
+      }
+    ]
+  }
+}

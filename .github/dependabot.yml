@@ -1,0 +1,109 @@
+version: 2
+updates:
+  # Node.js / npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    groups:
+      # Group minor/patch updates for dev dependencies
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "prettier"
+          - "vite"
+          - "@vitejs/*"
+          - "postcss"
+          - "autoprefixer"
+          - "tailwindcss"
+          - "concurrently"
+          - "wait-on"
+          - "turbo"
+          - "tsup"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group Electron-related updates separately (higher risk)
+      electron:
+        patterns:
+          - "electron"
+          - "electron-builder"
+          - "electron-updater"
+          - "electron-store"
+          - "@electron/*"
+      # Group React updates
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+          - "framer-motion"
+      # Group utility dependencies
+      utilities:
+        patterns:
+          - "dayjs"
+          - "clsx"
+          - "pretty-ms"
+          - "lucide-react"
+          - "zod"
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+    open-pull-requests-limit: 10
+    # Reviewers for security-critical dependencies
+    reviewers:
+      - "pilotstack-app/security"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    open-pull-requests-limit: 5
+
+  # Nested package: @pilotstack/types
+  - package-ecosystem: "npm"
+    directory: "/packages/types"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(types)"
+    labels:
+      - "dependencies"
+      - "packages"
+    open-pull-requests-limit: 3
+
+  # Nested package: @pilotstack/verification
+  - package-ecosystem: "npm"
+    directory: "/packages/verification"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(verification)"
+    labels:
+      - "dependencies"
+      - "packages"
+    open-pull-requests-limit: 3

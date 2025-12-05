@@ -1,0 +1,16 @@
+# Security-critical files require security team review
+/electron/ipc/                     @pilotstack/security
+/electron/services/auth/           @pilotstack/security
+/electron/services/upload/         @pilotstack/security
+/electron/utils/crypto-helpers.ts  @pilotstack/security
+/electron/config/store.ts          @pilotstack/security
+/electron/preload.ts               @pilotstack/security
+
+# Build and release configuration
+/.github/workflows/                @pilotstack/security
+/build/                            @pilotstack/security
+package.json                       @pilotstack/security
+pnpm-lock.yaml                     @pilotstack/security
+
+# All other files
+*                                  @pilotstack/core

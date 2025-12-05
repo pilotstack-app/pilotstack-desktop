@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Required for hardened runtime -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    
+    <!-- Required for JIT compilation (V8 engine) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    
+    <!-- Required for screen capture functionality -->
+    <key>com.apple.security.device.screen-capture</key>
+    <true/>
+    
+    <!-- Note: Audio and camera entitlements removed for privacy -->
+    <!-- The app captures screen frames only, no audio or camera access -->
+    
+    <!-- Required for accessing user-selected files -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    
+    <!-- Required for network requests (cloud upload) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    
+    <!-- Required for auto-updates -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+    
+    <!-- Required for accessibility features (activity monitoring) -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+</dict>
+</plist>
+
