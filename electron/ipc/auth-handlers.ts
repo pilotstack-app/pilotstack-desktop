@@ -85,6 +85,16 @@ export function registerAuthHandlers(context: AppContext): void {
           accessTokenExpiresAt,
           refreshTokenExpiresAt,
         });
+      } else if (credentials.accessToken && !credentials.refreshToken) {
+        // accessToken provided without refreshToken - this is invalid for secure auth
+        logger.error("auth:set-device-credentials called with accessToken but no refreshToken", {
+          deviceId: credentials.deviceId,
+          hasDeviceSecret: !!credentials.deviceSecret,
+        });
+        return {
+          success: false,
+          error: "accessToken requires refreshToken for secure authentication",
+        };
       } else if (credentials.deviceSecret) {
         // Legacy: just store device secret
         store.set("deviceSecret", credentials.deviceSecret);

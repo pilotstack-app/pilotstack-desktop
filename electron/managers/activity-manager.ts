@@ -267,23 +267,23 @@ export class ActivityManager {
     const now = Date.now();
     const totalDuration = this.startTime ? (now - this.startTime) / 1000 : 0;
 
-    // Calculate total idle time
-    let totalIdleTime = this.idlePeriods.reduce(
-      (sum, period) => sum + period.duration,
-      0
-    );
-
-    // Add current idle period if active
-    if (this.currentIdleStart !== null) {
-      totalIdleTime += (now - this.currentIdleStart) / 1000;
+    // Use the tracked activeDuration that's incremented during checkActivity()
+    // Add any uncounted active time since the last check (if not currently idle)
+    let finalActiveDuration = this.activeDuration;
+    if (this.currentIdleStart === null && this.lastActiveTime !== null && !this.isPaused) {
+      // User is currently active - add time since last check interval
+      const timeSinceLastCheck = (now - this.lastActiveTime) / 1000;
+      if (timeSinceLastCheck < IDLE_THRESHOLD_SECONDS) {
+        finalActiveDuration += timeSinceLastCheck;
+      }
     }
 
-    // Active duration is total minus idle
-    const calculatedActiveDuration = Math.max(0, totalDuration - totalIdleTime);
+    // Ensure active duration doesn't exceed total duration
+    finalActiveDuration = Math.min(finalActiveDuration, totalDuration);
 
     return {
       totalDuration: Math.round(totalDuration),
-      activeDuration: Math.round(calculatedActiveDuration),
+      activeDuration: Math.round(Math.max(0, finalActiveDuration)),
       idlePeriods: this.idlePeriods.map((p) => ({
         start: p.start,
         end: p.end,
