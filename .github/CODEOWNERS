@@ -1,16 +1,21 @@
+# =============================================================================
+# CODEOWNERS - Security-Critical File Reviews
+# =============================================================================
+
+
 # Security-critical files require security team review
-/electron/ipc/                     @pilotstack/security
-/electron/services/auth/           @pilotstack/security
-/electron/services/upload/         @pilotstack/security
-/electron/utils/crypto-helpers.ts  @pilotstack/security
-/electron/config/store.ts          @pilotstack/security
-/electron/preload.ts               @pilotstack/security
+/electron/ipc/                     @pilotstack-app/security
+/electron/services/auth/           @pilotstack-app/security
+/electron/services/upload/         @pilotstack-app/security
+/electron/utils/crypto-helpers.ts  @pilotstack-app/security
+/electron/config/store.ts          @pilotstack-app/security
+/electron/preload.ts               @pilotstack-app/security
 
 # Build and release configuration
-/.github/workflows/                @pilotstack/security
-/build/                            @pilotstack/security
-package.json                       @pilotstack/security
-pnpm-lock.yaml                     @pilotstack/security
+/.github/workflows/                @pilotstack-app/security
+/build/                            @pilotstack-app/security
+package.json                       @pilotstack-app/security
+pnpm-lock.yaml                     @pilotstack-app/security
 
-# All other files
-*                                  @pilotstack/core
+# All other files - core team can review
+*                                  @pilotstack-app/core

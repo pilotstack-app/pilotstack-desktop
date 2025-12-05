@@ -39,7 +39,7 @@ env:
   # Only these users can trigger releases that upload to S3
   # Add your trusted maintainers here
   # ==========================================================================
-  AUTHORIZED_ACTORS: "hamzamarhoun"
+  AUTHORIZED_ACTORS: "Hamza-Rivon"
 
 # Prevent concurrent releases
 concurrency:
