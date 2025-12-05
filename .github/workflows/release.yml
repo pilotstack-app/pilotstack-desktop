@@ -159,19 +159,19 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "pnpm"
           
       - name: Setup Python (for node-gyp)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           
@@ -215,7 +215,7 @@ jobs:
       
       # SECURITY: Configure AWS with minimal permissions
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.S3_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -281,19 +281,19 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "pnpm"
           
       - name: Setup Python (for node-gyp)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           
@@ -328,7 +328,7 @@ jobs:
           }
       
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.S3_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -378,19 +378,19 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "pnpm"
           
       - name: Setup Python (for node-gyp)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           
@@ -438,7 +438,7 @@ jobs:
           fi
       
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.S3_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
@@ -489,13 +489,13 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "pnpm"
@@ -510,7 +510,7 @@ jobs:
           output-file: sbom.spdx.json
           
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sbom
           path: sbom.spdx.json
@@ -529,10 +529,10 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Download SBOM
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: sbom
           path: artifacts/
@@ -621,7 +621,7 @@ jobs:
     
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.S3_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
