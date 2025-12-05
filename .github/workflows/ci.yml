@@ -1,5 +1,16 @@
 name: CI
 
+# =============================================================================
+# CI Pipeline for pilotstack-desktop
+# =============================================================================
+# This workflow runs on:
+# - All pull requests targeting main
+# - Pushes to main (after PR merge)
+#
+# SECURITY: This workflow does NOT have access to secrets on fork PRs
+# Fork PRs will skip the security-scan job if secrets are unavailable
+# =============================================================================
+
 on:
   push:
     branches: [main]
@@ -8,6 +19,11 @@ on:
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
+
+# SECURITY: Minimal permissions
+permissions:
+  contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
