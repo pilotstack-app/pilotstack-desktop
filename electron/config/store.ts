@@ -245,10 +245,19 @@ export class SecureAuthManager {
 
   /**
    * Check if user is authenticated
+   * 
+   * Verifies both that credentials exist AND can be successfully decrypted.
+   * This prevents false positives where encrypted tokens exist but decryption fails.
    */
   isAuthenticated(): boolean {
     const auth = authStore.get("auth");
-    return !!auth?.accessToken && !this.isRefreshTokenExpired();
+    if (!auth?.accessToken) return false;
+    
+    // Verify the token can actually be decrypted - decryptSecure returns null on failure
+    const decryptedToken = decryptSecure(auth.accessToken);
+    if (!decryptedToken) return false;
+    
+    return !this.isRefreshTokenExpired();
   }
 
   /**

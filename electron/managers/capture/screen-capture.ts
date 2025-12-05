@@ -182,8 +182,8 @@ export async function captureScreen(
     let lastError: string | null = null;
     let totalAttempts = 0;
 
-    // Outer loop: try different sizes
-    for (const size of targetSizes) {
+    // Outer loop: try different sizes (labeled for early exit when no source)
+    sizeLoop: for (const size of targetSizes) {
       // Inner loop: retry with delays for each size
       for (let retry = 0; retry < CAPTURE_CONFIG.RETRY_ATTEMPTS; retry++) {
         totalAttempts++;
@@ -193,9 +193,9 @@ export async function captureScreen(
           
           if (!source) {
             lastError = "No capture source available";
-            // Small delay before trying next size
-            await sleep(50);
-            break; // No source at this size, try next
+            // No source found - this is not a transient condition that retries or
+            // different thumbnail sizes will resolve, so exit both loops immediately
+            break sizeLoop;
           }
           
           if (buffer && buffer.length >= CAPTURE_CONFIG.MIN_VALID_IMAGE_SIZE) {
