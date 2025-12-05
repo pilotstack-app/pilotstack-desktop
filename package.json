@@ -38,7 +38,7 @@
     "@pilotstack/verification": "workspace:*",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
-    "electron-store": "^8.2.0",
+    "electron-store": "^11.0.2",
     "electron-updater": "^6.3.9",
     "framer-motion": "^11.13.1",
     "lucide-react": "^0.468.0",
@@ -50,7 +50,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.5.0",
+    "@electron/notarize": "^3.1.1",
     "@types/node": "^20.17.0",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
@@ -60,8 +60,8 @@
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.0",
     "dotenv": "^16.4.5",
-    "electron": "^33.2.1",
-    "electron-builder": "^25.1.8",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.39.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
