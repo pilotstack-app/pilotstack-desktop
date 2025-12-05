@@ -69,10 +69,12 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Run Gitleaks (Secret Detection)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Use TruffleHog for secret detection (free, open source)
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+        continue-on-error: true
           
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

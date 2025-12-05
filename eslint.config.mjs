@@ -3,10 +3,18 @@ import tsParser from "@typescript-eslint/parser";
 
 export default [
   {
-    ignores: ["dist/**", "node_modules/**", "electron/**", "release/**"],
+    // Only ignore build outputs, not source code
+    ignores: [
+      "dist/**",
+      "electron-dist/**",
+      "node_modules/**",
+      "release/**",
+      "*.config.{js,mjs,cjs}",
+    ],
   },
   {
-    files: ["**/*.{ts,tsx}"],
+    // Lint all TypeScript files in src/ and electron/
+    files: ["src/**/*.{ts,tsx}", "electron/**/*.ts"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -21,11 +29,16 @@ export default [
       "@typescript-eslint": tsPlugin,
     },
     rules: {
+      // TypeScript-specific rules
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      // Allow empty catch blocks (common in electron error handling)
+      "no-empty": ["error", { allowEmptyCatch: true }],
+      // Allow console in electron main process
+      "no-console": "off",
     },
   },
 ];

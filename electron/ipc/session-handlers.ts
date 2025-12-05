@@ -54,7 +54,7 @@ export function registerSessionHandlers(context: AppContext): void {
 
       // Use frame validator directly - accessing private property via type assertion
       // TODO: Add public method to VideoManager for frame validation
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const frameValidator = (videoManager as any).frameValidator as
         | {
             validateAndRenumberFrames: (

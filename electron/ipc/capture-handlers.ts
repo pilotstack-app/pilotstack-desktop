@@ -171,7 +171,7 @@ export function registerCaptureHandlers(context: AppContext): void {
         logger.warn("Stop timed out, forcing cleanup");
         try {
           // Access private properties for emergency cleanup
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const manager = captureManager as any;
           if (manager.isRecordingActive !== undefined) {
             manager.isRecordingActive = false;

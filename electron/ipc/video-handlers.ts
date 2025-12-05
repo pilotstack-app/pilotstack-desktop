@@ -122,7 +122,7 @@ export function registerVideoHandlers(context: AppContext): void {
     try {
       const videoManager = context.getVideoManager();
       // Simple frame counting - no complex validation needed
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const countFrames = (videoManager as any).countFrames;
       if (typeof countFrames === "function") {
         const frameCount = await countFrames(options.sessionFolder);

@@ -4,106 +4,73 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "09:00"
       timezone: "UTC"
     groups:
-      # Group minor/patch updates for dev dependencies
-      dev-dependencies:
+      # Group ALL non-security updates together to reduce PR noise
+      all-dependencies:
         patterns:
-          - "@types/*"
-          - "typescript"
-          - "eslint*"
-          - "@typescript-eslint/*"
-          - "prettier"
-          - "vite"
-          - "@vitejs/*"
-          - "postcss"
-          - "autoprefixer"
-          - "tailwindcss"
-          - "concurrently"
-          - "wait-on"
-          - "turbo"
-          - "tsup"
+          - "*"
         update-types:
           - "minor"
           - "patch"
-      # Group Electron-related updates separately (higher risk)
-      electron:
-        patterns:
-          - "electron"
-          - "electron-builder"
-          - "electron-updater"
-          - "electron-store"
-          - "@electron/*"
-      # Group React updates
-      react:
-        patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react*"
-          - "framer-motion"
-      # Group utility dependencies
-      utilities:
-        patterns:
-          - "dayjs"
-          - "clsx"
-          - "pretty-ms"
-          - "lucide-react"
-          - "zod"
-        update-types:
-          - "minor"
-          - "patch"
+    # Only create PRs for security updates and major versions individually
+    ignore:
+      # Ignore major version bumps in groups (review manually)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "deps"
       include: "scope"
     labels:
       - "dependencies"
       - "npm"
-    open-pull-requests-limit: 10
-    # Reviewers for security-critical dependencies
-    reviewers:
-      - "pilotstack-app/security"
+    # Reduce to 3 PRs max to avoid CI overload
+    open-pull-requests-limit: 3
 
-  # GitHub Actions
+  # GitHub Actions - less frequent updates
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "UTC"
+      interval: "monthly"
+    groups:
+      # Group all action updates
+      actions:
+        patterns:
+          - "*"
     commit-message:
       prefix: "ci"
       include: "scope"
     labels:
       - "dependencies"
       - "github-actions"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
 
-  # Nested package: @pilotstack/types
+  # Nested packages - monthly check only
   - package-ecosystem: "npm"
     directory: "/packages/types"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
     commit-message:
       prefix: "deps(types)"
     labels:
       - "dependencies"
-      - "packages"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 1
 
-  # Nested package: @pilotstack/verification
   - package-ecosystem: "npm"
     directory: "/packages/verification"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
+    groups:
+      all:
+        patterns: ["*"]
     commit-message:
       prefix: "deps(verification)"
     labels:
       - "dependencies"
-      - "packages"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 1
