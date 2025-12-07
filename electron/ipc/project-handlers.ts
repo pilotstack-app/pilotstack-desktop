@@ -47,15 +47,25 @@ const PROJECT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 // API Fetching
 // =============================================================================
 
+// Track if we've already logged the "not authenticated" message
+let hasLoggedNotAuthenticated = false;
+
 /**
  * Fetch projects from the web API
  */
 async function fetchProjectsFromApi(): Promise<ProjectsListResponse | null> {
   const accessToken = secureAuthManager.getAccessToken();
   if (!accessToken) {
-    logger.debug("Cannot fetch projects: not authenticated");
+    // Only log once per session to avoid spam
+    if (!hasLoggedNotAuthenticated) {
+      logger.debug("Projects: skipping fetch (not authenticated - offline mode)");
+      hasLoggedNotAuthenticated = true;
+    }
     return null;
   }
+  
+  // Reset the flag when authenticated so we log again if auth is lost
+  hasLoggedNotAuthenticated = false;
 
   try {
     const signedHeaders = createSignedHeaders("");

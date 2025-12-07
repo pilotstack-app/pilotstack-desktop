@@ -125,7 +125,14 @@ export function registerVideoHandlers(context: AppContext): void {
        
       const countFrames = (videoManager as any).countFrames;
       if (typeof countFrames === "function") {
-        const frameCount = await countFrames(options.sessionFolder);
+        // Bind to videoManager to ensure 'this' context is preserved if needed
+        const frameCount = await countFrames.call(videoManager, options.sessionFolder);
+        
+        // If count is 0, we should probably treat it as a potential error or at least warn
+        if (frameCount === 0) {
+          logger.warn("video:validate-frames found 0 frames", { sessionFolder: options.sessionFolder });
+        }
+        
         return {
           success: true,
           validFrames: frameCount,

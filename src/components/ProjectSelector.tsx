@@ -75,9 +75,14 @@ export function ProjectSelector({
       const result = await window.pilotstack.getProjects();
       if (result.success) {
         setProjects(result.projects.filter((p) => !p.isArchived));
+      } else {
+        // Gracefully handle offline mode - no projects is OK
+        setProjects([]);
       }
     } catch (error) {
       console.error("Failed to load projects:", error);
+      // Gracefully handle errors - don't break the UI
+      setProjects([]);
     } finally {
       setIsLoading(false);
     }
@@ -141,9 +146,13 @@ export function ProjectSelector({
       const result = await window.pilotstack.refreshProjects();
       if (result.success) {
         setProjects(result.projects.filter((p) => !p.isArchived));
+      } else {
+        // Keep existing projects on refresh failure
+        // User might be offline
       }
     } catch (error) {
       console.error("Failed to refresh projects:", error);
+      // Keep existing projects on error
     } finally {
       setIsLoading(false);
     }
@@ -385,9 +394,10 @@ export function ProjectSelector({
                 {projects.length === 0 && !isLoading && (
                   <div className="px-4 py-6 text-center">
                     <FolderOpen className="w-8 h-8 mx-auto mb-2 text-chrono-muted/50" />
-                    <div className="text-chrono-muted text-sm">No projects yet</div>
+                    <div className="text-chrono-muted text-sm">No projects</div>
                     <div className="text-chrono-muted/60 text-xs mt-1">
-                      Create projects on pilotstack.app
+                      {/* Show appropriate message based on auth state */}
+                      Sign in and create projects on pilotstack.app
                     </div>
                   </div>
                 )}

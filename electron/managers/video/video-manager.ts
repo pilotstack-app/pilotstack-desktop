@@ -115,15 +115,41 @@ export class VideoManager {
   }
 
   /**
-   * Count frames in session folder (public for IPC handler)
+   * Count frames/segments in session folder (public for IPC handler)
+   * 
+   * Supports both:
+   * - Frame-based recordings: frame_*.png/jpg
+   * - HLS-based recordings: segment_*.ts files
    */
   async countFrames(sessionFolder: string): Promise<number> {
     try {
       const files = await fs.promises.readdir(sessionFolder);
+      
+      // Check for HLS segments first (native capture)
+      const segmentFiles = files.filter((f) => f.match(/^segment_\d+\.ts$/i));
+      if (segmentFiles.length > 0) {
+        logger.debug("Found HLS segments", { count: segmentFiles.length });
+        return segmentFiles.length;
+      }
+      
+      // Fall back to frame files (legacy capture)
       const frameFiles = files.filter((f) => f.match(/^frame_\d+\.(jpg|jpeg|png)$/i));
-      return frameFiles.length;
+      if (frameFiles.length > 0) {
+        logger.debug("Found frame files", { count: frameFiles.length });
+        return frameFiles.length;
+      }
+      
+      // Also check for playlist.m3u8 - if it exists, session might still be valid
+      // even without segments yet (recording just started)
+      const hasPlaylist = files.includes("playlist.m3u8");
+      if (hasPlaylist) {
+        logger.debug("Found HLS playlist but no segments yet");
+        return 0;
+      }
+      
+      return 0;
     } catch (error) {
-      logger.error("Failed to count frames", { error: (error as Error).message });
+      logger.error("Failed to count frames/segments", { error: (error as Error).message });
       return 0;
     }
   }

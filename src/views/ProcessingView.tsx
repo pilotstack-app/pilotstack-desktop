@@ -212,12 +212,25 @@ export function ProcessingView({
           );
         }
       } else {
-        console.error("[ProcessingView] Validation failed:", result.error);
+        const error = result.error || (result.validFrames === 0 ? "No frames captured" : "Unknown validation error");
+        console.error("[ProcessingView] Validation failed:", error);
         setStatus("error");
-        setErrorMessage(
-          result.error ||
-            "No valid frames found. All captured frames were empty or corrupted.",
-        );
+        
+        // Provide more helpful error messages based on the situation
+        let errorMsg = result.error;
+        if (!errorMsg || result.validFrames === 0) {
+          // Check if this is likely a permission issue
+          errorMsg = "No video segments captured. This usually means:\n\n" +
+            "1. Screen Recording permission was not granted\n" +
+            "2. FFmpeg failed to start the capture\n" +
+            "3. The recording folder is missing or inaccessible\n\n" +
+            "Please check:\n" +
+            "• System Settings → Privacy & Security → Screen Recording\n" +
+            "• Ensure pilotstack (or Electron) has permission enabled\n" +
+            "• You may need to restart the app after granting permission";
+        }
+        
+        setErrorMessage(errorMsg);
       }
     } catch (error) {
       // Clear timeout on error
