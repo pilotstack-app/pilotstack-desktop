@@ -41,6 +41,7 @@ export interface VideoGenerateResult {
   outputFile: string;
   speedMultiplier?: number;
   originalFrames?: number;
+  error?: string;
 }
 
 export interface NormalizedProgress {

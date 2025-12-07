@@ -58,13 +58,19 @@ export function ProcessingView({
   // Track validation progress for long recordings
   const [validationProgress, setValidationProgress] = useState(0);
   const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Refs to prevent race conditions from React StrictMode double-mounting
+  const isMountedRef = useRef(true);
+  const validationStartedRef = useRef(false);
 
   // Listen for validation progress events
   useEffect(() => {
     const unsubscribe = window.pilotstack.onValidationProgress(
       (data: ValidationProgressData) => {
-        setValidationProgress(data.progress);
-        setStatusText(data.message);
+        if (isMountedRef.current) {
+          setValidationProgress(data.progress);
+          setStatusText(data.message);
+        }
       },
     );
     return unsubscribe;
@@ -73,6 +79,8 @@ export function ProcessingView({
   useEffect(() => {
     const unsubscribe = window.pilotstack.onVideoProgress(
       (data: VideoProgressData) => {
+        if (!isMountedRef.current) return;
+        
         const percent =
           data.percent !== undefined
             ? Math.min(data.percent, 99)
@@ -91,8 +99,23 @@ export function ProcessingView({
   // Validate frames and collect metadata on mount
   useEffect(() => {
     console.log("[ProcessingView] Mounted with sessionFolder:", sessionFolder, "totalFrames:", totalFrames);
-    validateFrames();
-    collectSessionMetadata();
+    
+    // Reset mounted ref on mount
+    isMountedRef.current = true;
+    
+    // Prevent double validation from React StrictMode
+    if (!validationStartedRef.current) {
+      validationStartedRef.current = true;
+      validateFrames();
+      collectSessionMetadata();
+    } else {
+      console.log("[ProcessingView] Skipping duplicate validation (StrictMode double-mount)");
+    }
+    
+    return () => {
+      console.log("[ProcessingView] Unmounting");
+      isMountedRef.current = false;
+    };
   }, [sessionFolder]);
 
   // Collect activity stats, paste events, and keyboard stats for verification
@@ -103,6 +126,12 @@ export function ProcessingView({
         window.pilotstack.getClipboardEvents(),
         window.pilotstack.getKeyboardStats(),
       ]);
+
+      // Check if component is still mounted
+      if (!isMountedRef.current) {
+        console.log("[ProcessingView] Component unmounted, skipping metadata update");
+        return;
+      }
 
       if (stats) {
         setActivityStats(stats);
@@ -164,6 +193,12 @@ export function ProcessingView({
 
   const validateFrames = async () => {
     console.log("[ProcessingView] Starting frame validation for:", sessionFolder);
+    
+    if (!isMountedRef.current) {
+      console.log("[ProcessingView] Component unmounted, skipping validation");
+      return;
+    }
+    
     setStatus("validating");
     setStatusText("Validating captured frames...");
     setValidationProgress(0);
@@ -199,10 +234,17 @@ export function ProcessingView({
         validationTimeoutRef.current = null;
       }
 
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) {
+        console.log("[ProcessingView] Component unmounted after validation, skipping state update");
+        return;
+      }
+
       if (result.success && result.validFrames && result.validFrames > 0) {
         console.log("[ProcessingView] Validation successful, valid frames:", result.validFrames);
         setValidFrameCount(result.validFrames);
         setStatus("idle");
+        console.log("[ProcessingView] Status set to idle, ready for generation");
         setStatusText("");
         setValidationProgress(100);
 
@@ -237,6 +279,12 @@ export function ProcessingView({
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current);
         validationTimeoutRef.current = null;
+      }
+      
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) {
+        console.log("[ProcessingView] Component unmounted after error, skipping state update");
+        return;
       }
       
       console.error("[ProcessingView] Frame validation error:", error);
@@ -281,6 +329,8 @@ export function ProcessingView({
     setErrorMessage("");
 
     try {
+      console.log("[ProcessingView] Starting video generation:", { sessionFolder, musicPath: musicPath || undefined });
+      
       // Pass metadata to embed stats overlay in video
       const result = await window.pilotstack.generateVideo({
         sessionFolder,
@@ -288,7 +338,9 @@ export function ProcessingView({
         metadata: sessionMetadata || undefined,
       });
 
-      if (result.success) {
+      console.log("[ProcessingView] Video generation result:", result);
+
+      if (result.success && result.outputFile) {
         setStatus("success");
         setProgress(100);
         setStatusText("Complete!");
@@ -297,9 +349,16 @@ export function ProcessingView({
           () => onComplete(result.outputFile, sessionMetadata || undefined),
           500,
         );
+      } else {
+        // Handle case where result doesn't have expected structure
+        const errorMsg = result.error || "Video generation failed - no output file";
+        console.error("[ProcessingView] Generation failed:", errorMsg);
+        setStatus("error");
+        setErrorMessage(errorMsg);
+        setStatusText("");
       }
     } catch (error) {
-      console.error("Video generation failed:", error);
+      console.error("[ProcessingView] Video generation exception:", error);
       setStatus("error");
       setErrorMessage(
         error instanceof Error ? error.message : "Video generation failed",
@@ -329,6 +388,9 @@ export function ProcessingView({
 
   const isProcessing = status === "processing" || status === "validating";
   const canGenerate = status === "idle" && validFrameCount > 0;
+
+  // Debug logging to track state during render
+  console.log("[ProcessingView] Render:", { status, isProcessing, canGenerate, validFrameCount });
 
   return (
     <motion.div

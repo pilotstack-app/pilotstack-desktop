@@ -88,7 +88,8 @@ export function registerVideoHandlers(context: AppContext): void {
         },
       });
 
-      logger.info("Video generation completed successfully", {
+      logger.info("Video generation completed", {
+        success: result.success,
         outputFile: result.outputFile,
       });
 
@@ -100,7 +101,12 @@ export function registerVideoHandlers(context: AppContext): void {
         message: "Video generation complete",
       });
 
-      return result;
+      return {
+        success: result.success,
+        outputFile: result.outputFile,
+        speedMultiplier: result.speedMultiplier,
+        originalFrames: result.originalFrames,
+      };
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
@@ -111,6 +117,7 @@ export function registerVideoHandlers(context: AppContext): void {
       });
       return {
         success: false,
+        outputFile: "",
         error: errorMessage || "Failed to generate video",
       };
     }
