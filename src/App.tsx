@@ -11,7 +11,7 @@ import type { RecoverableSession, RecordingState } from "./types/electron";
 
 export type AppView = "recording" | "processing" | "settings" | "completed" | "recordings";
 
-import type { SessionMetadata } from "./types/electron";
+import type { SessionMetadata, ProjectSelection } from "./types/electron";
 
 export interface SessionData {
   sessionFolder: string;
@@ -19,6 +19,8 @@ export interface SessionData {
   musicPath?: string;
   outputFile?: string;
   metadata?: SessionMetadata;
+  // Phase 5: Project assignment
+  project?: ProjectSelection;
 }
 
 function App() {
@@ -145,7 +147,7 @@ function App() {
    * Handle recording completion (normal stop)
    */
   const handleRecordingComplete = useCallback(
-    (folder: string, frames: number) => {
+    async (folder: string, frames: number) => {
       console.log("[App] handleRecordingComplete called:", { folder, frames });
       
       if (!folder) {
@@ -153,10 +155,18 @@ function App() {
         return;
       }
       
+      // Get the current project selection
+      let project: ProjectSelection | undefined;
+      try {
+        project = await window.pilotstack.getProjectSelection();
+      } catch (error) {
+        console.error("Failed to get project selection:", error);
+      }
+      
       setIsRecording(false);
       setRecordingFrameCount(0);
       setCurrentSessionFolder(null);
-      setSessionData({ sessionFolder: folder, totalFrames: frames });
+      setSessionData({ sessionFolder: folder, totalFrames: frames, project });
       console.log("[App] Switching to processing view");
       setCurrentView("processing");
     },
@@ -181,7 +191,7 @@ function App() {
         prev ? { ...prev, outputFile, metadata } : null,
       );
 
-      // Save to recordings library with keyboard stats
+      // Save to recordings library with keyboard stats and project info
       try {
         const result = await window.pilotstack.addRecording({
           sessionId: sessionData?.sessionFolder?.split("/").pop() || `session_${Date.now()}`,
@@ -196,6 +206,9 @@ function App() {
           status: "ready",
           // Include keyboard stats for cloud upload
           keyboardStats: metadata?.keyboardStats,
+          // Phase 5: Include project assignment
+          projectId: sessionData?.project?.projectId || null,
+          projectName: sessionData?.project?.projectName || null,
         });
 
         if (result.success && result.recording) {

@@ -231,6 +231,30 @@ export const recordingIdSchema = z
   .strict();
 
 /**
+ * Session metrics schema for structured metrics data
+ */
+const sessionMetricsSchema = z
+  .object({
+    version: z.number().optional(),
+    sessionId: z.string().optional(),
+    startTime: z.number().optional(),
+    endTime: z.number().nullable().optional(),
+    lastUpdated: z.number().optional(),
+    input: z.object({
+      keyboard: z.object({}).passthrough().optional(),
+      mouse: z.object({}).passthrough().optional(),
+      clipboard: z.object({}).passthrough().optional(),
+      totalInputEvents: z.number().optional(),
+      sessionDuration: z.number().optional(),
+      lastActivityTime: z.number().nullable().optional(),
+    }).passthrough().optional(),
+    activity: z.object({}).passthrough().optional(),
+  })
+  .passthrough()
+  .nullable()
+  .optional();
+
+/**
  * recordings:add - Add new recording
  * 
  * Note: Using passthrough() to allow additional fields from frontend
@@ -258,11 +282,18 @@ export const addRecordingSchema = z
     isVerified: z.boolean().default(false),
     pasteEventCount: z.number().int().nonnegative().optional(),
     
-    // Activity stats
+    // Activity stats (legacy)
     keyboardStats: keyboardStatsSchema,
+    
+    // Structured metrics from MetricsAggregator
+    metrics: sessionMetricsSchema,
     
     // Status
     status: z.enum(["recording", "processing", "ready", "upload_queued", "uploading", "uploaded", "failed"]).optional(),
+    
+    // Phase 5: Project assignment
+    projectId: z.string().max(128).nullable().optional(),
+    projectName: z.string().max(200).nullable().optional(),
   })
   .passthrough(); // Allow additional fields from frontend
 
@@ -331,6 +362,9 @@ const ALLOWED_STORE_KEYS = [
   "useJpegCapture",
   "enableAdaptiveQuality",
   "enableFrameSkipping",
+  // Project settings (Phase 5)
+  "lastUsedProjectId",
+  "lastUsedProjectName",
 ] as const;
 
 export const storeSetSchema = z
@@ -344,6 +378,41 @@ export const storeSetSchema = z
  * logger:get-recent - Get recent log entries
  */
 export const loggerGetRecentSchema = z.number().int().min(1).max(10000);
+
+// =============================================================================
+// Project Handler Schemas (Phase 5: Desktop App Integration)
+// =============================================================================
+
+/**
+ * projects:setSelection - Set the selected project for recording
+ */
+export const setProjectSelectionSchema = z
+  .object({
+    projectId: z.string().max(128).nullable(),
+    projectName: z.string().max(200).nullable(),
+  })
+  .strict();
+
+/**
+ * projects:addPattern - Add a window title pattern for auto-detection
+ */
+export const addProjectPatternSchema = z
+  .object({
+    projectId: z.string().min(1).max(128),
+    pattern: z.string().min(1).max(500),
+    priority: z.number().int().min(0).max(100).default(50),
+  })
+  .strict();
+
+/**
+ * projects:removePattern - Remove a pattern
+ */
+export const removeProjectPatternSchema = z
+  .object({
+    projectId: z.string().min(1).max(128),
+    pattern: z.string().min(1).max(500),
+  })
+  .strict();
 
 // =============================================================================
 // Schema Registry
@@ -386,6 +455,11 @@ export const ipcSchemas = {
   "store:get": storeGetSchema,
   "store:set": storeSetSchema,
   "logger:get-recent": loggerGetRecentSchema,
+
+  // Project handlers (Phase 5)
+  "projects:setSelection": setProjectSelectionSchema,
+  "projects:addPattern": addProjectPatternSchema,
+  "projects:removePattern": removeProjectPatternSchema,
 } as const;
 
 /**

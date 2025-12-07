@@ -96,6 +96,100 @@ export interface UploadCheckpoint {
 }
 
 /**
+ * Keyboard input metrics
+ * 
+ * Tracks keyboard activity patterns for verification scoring.
+ */
+export interface KeyboardMetrics {
+  estimatedKeystrokes: number;
+  keyboardActiveTime: number; // seconds
+  estimatedWordsTyped: number;
+  typingBurstCount: number;
+  averageWPM: number;
+  peakWPM: number;
+  shortcutEstimate: number;
+  typingIntensity: number; // keystrokes per active minute
+}
+
+/**
+ * Mouse input metrics
+ * 
+ * Tracks mouse activity for verification scoring.
+ */
+export interface MouseMetrics {
+  mouseClicks: number;
+  mouseDistance: number; // pixels
+  scrollEvents: number;
+}
+
+/**
+ * Clipboard/paste metrics
+ * 
+ * Tracks paste events for verification scoring.
+ */
+export interface ClipboardMetrics {
+  pasteEventCount: number;
+  totalPastedCharacters: number;
+  largePasteCount: number; // pastes > 500 chars
+  pasteTimestamps: number[];
+}
+
+/**
+ * Combined input metrics
+ * 
+ * Aggregates all input activity for a recording session.
+ */
+export interface InputMetrics {
+  keyboard: KeyboardMetrics;
+  mouse: MouseMetrics;
+  clipboard: ClipboardMetrics;
+  totalInputEvents: number;
+  sessionDuration: number; // seconds
+  lastActivityTime: number | null;
+}
+
+/**
+ * Activity analysis stats
+ * 
+ * Computed statistics from input metrics for verification.
+ */
+export interface ActivityStats {
+  // Time-based
+  totalDuration: number; // seconds
+  activeDuration: number; // seconds (time with input activity)
+  idleDuration: number; // seconds
+  activityRatio: number; // activeDuration / totalDuration (0-1)
+  
+  // Input density
+  keystrokesPerMinute: number;
+  clicksPerMinute: number;
+  inputEventsPerMinute: number;
+  
+  // Verification indicators
+  hasNaturalTypingPattern: boolean;
+  hasSuspiciousWPM: boolean;
+  hasExcessivePasting: boolean;
+  
+  // Raw score contribution
+  activityScore: number; // 0-100
+}
+
+/**
+ * Session metrics file structure
+ * 
+ * Written to metrics.json in the session folder.
+ */
+export interface SessionMetrics {
+  version: number;
+  sessionId: string;
+  startTime: number;
+  endTime: number | null;
+  lastUpdated: number;
+  input: InputMetrics;
+  activity: ActivityStats;
+}
+
+/**
  * Recording entity
  * 
  * Reference: ARCHITECTURE_DOCUMENTATION.md - Core Systems §5 - Recordings Library
@@ -124,6 +218,11 @@ export interface Recording {
   cloudUrl: string | null;
   connectedUserId: string | null;
   uploadCheckpoint: UploadCheckpoint | null;
+  // New: structured metrics
+  metrics: SessionMetrics | null;
+  // Phase 5: Project assignment
+  projectId: string | null;
+  projectName: string | null;
 }
 
 /**
@@ -175,5 +274,68 @@ export interface UserProfile {
   name: string;
   handle: string;
   avatarUrl?: string;
+}
+
+// =============================================================================
+// Projects Feature Types (Phase 5: Desktop App Integration)
+// =============================================================================
+
+/**
+ * Project visibility options
+ */
+export type ProjectVisibility = "PRIVATE" | "UNLISTED" | "PUBLIC";
+
+/**
+ * Project entity from the API
+ * 
+ * Matches the Project model from the web platform.
+ */
+export interface Project {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  
+  // Computed stats
+  totalDuration: number;
+  totalRecordings: number;
+  verifiedDuration: number;
+  
+  // Visibility
+  visibility: ProjectVisibility;
+  slug: string | null;
+  
+  // Metadata
+  isArchived: boolean;
+  pinnedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Response from GET /api/projects
+ */
+export interface ProjectsListResponse {
+  projects: Project[];
+  uncategorizedCount: number;
+}
+
+/**
+ * Project selection for recording
+ */
+export interface ProjectSelection {
+  projectId: string | null;
+  projectName: string | null;
+}
+
+/**
+ * Project pattern for auto-detection
+ */
+export interface ProjectPattern {
+  projectId: string;
+  pattern: string; // Regex pattern or string match
+  priority: number;
 }
 

@@ -82,7 +82,27 @@ export function registerRecordingsHandlers(context: AppContext): void {
       return { success: false, error: "Recordings manager not initialized" };
     }
     try {
-      const recording = recordingsManager.add(recordingData);
+      // Convert the validated schema data to RecordingData type
+      // The schema is more permissive with passthrough(), so we need to cast
+      const data = {
+        sessionId: recordingData.sessionId,
+        videoPath: recordingData.videoPath,
+        framesDir: recordingData.framesDir,
+        title: recordingData.title,
+        duration: recordingData.duration,
+        activeDuration: recordingData.activeDuration,
+        frameCount: recordingData.frameCount,
+        verificationScore: recordingData.verificationScore,
+        isVerified: recordingData.isVerified,
+        pasteEventCount: recordingData.pasteEventCount,
+        fileSize: recordingData.fileSize,
+        status: recordingData.status,
+        metrics: recordingData.metrics as import("../config/types").SessionMetrics | null | undefined,
+        // Phase 5: Project assignment
+        projectId: (recordingData as any).projectId || null,
+        projectName: (recordingData as any).projectName || null,
+      };
+      const recording = recordingsManager.add(data);
       return { success: true, recording };
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);

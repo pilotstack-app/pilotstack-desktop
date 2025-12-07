@@ -57,6 +57,9 @@ export const API_ENDPOINTS = {
   // Recordings
   RECORDINGS_FINALIZE: "/api/recordings/finalize",
   RECORDINGS_VIEW: "/recordings", // For constructing shareable URLs
+
+  // Projects (Phase 5: Desktop App Integration)
+  PROJECTS: "/api/projects",
 } as const;
 
 /**

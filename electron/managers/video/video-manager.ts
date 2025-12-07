@@ -1,8 +1,8 @@
 /**
- * Simplified Video Manager
+ * Video Manager
  * 
- * Simple approach: Convert frames to timelapse video with proper speed.
- * No HLS, no complex filters, just reliable frame-to-video conversion.
+ * Handles video generation from both frame-based and HLS recordings.
+ * Supports the new native FFmpeg capture (HLS) and legacy frame capture.
  */
 
 import * as fs from "fs";
@@ -14,6 +14,7 @@ import { VideoError } from "../../core/app-error";
 import { store } from "../../config/store";
 import { logger } from "../../utils/logger";
 import { getFFmpegPath, getSoftwareEncodingArgs } from "../../utils/ffmpeg";
+import { HLSFinalizer } from "./hls-finalizer";
 
 /**
  * Video generation result
@@ -53,14 +54,42 @@ export interface VideoGenerationOptions {
 const TARGET_TIMELAPSE_DURATION = 30;
 
 /**
- * Simplified Video Manager
+ * Video Manager
  * 
- * Converts captured frames to timelapse video.
- * Simple, reliable, works on all devices.
+ * Converts captured recordings to timelapse video.
+ * Supports both frame-based and HLS-based recordings.
  */
 export class VideoManager {
-  constructor(_context: AppContext) {
-    // Context stored for potential future use
+  private context: AppContext;
+  private hlsFinalizer: HLSFinalizer;
+
+  constructor(context: AppContext) {
+    this.context = context;
+    this.hlsFinalizer = new HLSFinalizer();
+  }
+
+  /**
+   * Check if session is HLS-based (from native capture)
+   */
+  async isHLSSession(sessionFolder: string): Promise<boolean> {
+    try {
+      // Check for HLS playlist file
+      const playlistPath = path.join(sessionFolder, "playlist.m3u8");
+      if (fs.existsSync(playlistPath)) {
+        return true;
+      }
+      // Also check for recording.m3u8 (legacy)
+      const legacyPath = path.join(sessionFolder, "recording.m3u8");
+      if (fs.existsSync(legacyPath)) {
+        return true;
+      }
+      // Check for .ts segment files
+      const files = await fs.promises.readdir(sessionFolder);
+      const hasSegments = files.some(f => f.endsWith(".ts"));
+      return hasSegments;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -262,11 +291,97 @@ export class VideoManager {
   }
 
   /**
-   * Generate video from frames
+   * Generate video from recording session
    * 
-   * Simple, reliable timelapse generation.
+   * Automatically detects session type (HLS or frames) and uses appropriate method.
    */
   async generate(
+    sessionFolder: string,
+    musicPath?: string,
+    options: VideoGenerationOptions = {}
+  ): Promise<VideoGenerationResult> {
+    logger.info("Starting video generation", {
+      sessionFolder,
+      hasMusic: !!musicPath,
+    });
+
+    // Check if this is an HLS session (from native capture)
+    const isHLS = await this.isHLSSession(sessionFolder);
+    
+    if (isHLS) {
+      logger.info("Detected HLS session, using HLS finalizer");
+      return this.generateFromHLS(sessionFolder, musicPath, options);
+    }
+
+    // Legacy frame-based generation
+    return this.generateFromFrames(sessionFolder, musicPath, options);
+  }
+
+  /**
+   * Generate video from HLS recording (native capture)
+   */
+  private async generateFromHLS(
+    sessionFolder: string,
+    musicPath?: string,
+    options: VideoGenerationOptions = {}
+  ): Promise<VideoGenerationResult> {
+    try {
+      // Set main window for progress updates
+      const mainWindow = this.context.getWindowManager().getMainWindow();
+      this.hlsFinalizer.setMainWindow(mainWindow);
+
+      // Load metrics for metadata
+      const metricsPath = path.join(sessionFolder, "metrics.json");
+      let sessionMetadata: { totalDuration: number; activeDuration: number; pasteEventCount: number; verificationScore: number; isVerified: boolean } | null = null;
+      
+      try {
+        if (fs.existsSync(metricsPath)) {
+          const metricsData = await fs.promises.readFile(metricsPath, "utf-8");
+          const metrics = JSON.parse(metricsData);
+          sessionMetadata = {
+            totalDuration: metrics.activity?.totalDuration || 0,
+            activeDuration: metrics.activity?.activeDuration || 0,
+            pasteEventCount: metrics.input?.clipboard?.pasteEventCount || 0,
+            verificationScore: metrics.activity?.activityScore || 0,
+            isVerified: (metrics.activity?.activityScore || 0) >= 70,
+          };
+        }
+      } catch (e) {
+        logger.debug("Could not load metrics for HLS finalization", { error: (e as Error).message });
+      }
+
+      const result = await this.hlsFinalizer.finalizeStreamingRecording(
+        sessionFolder,
+        sessionMetadata,
+        musicPath || null,
+        {
+          onProgress: (progress) => {
+            options.onProgress?.({
+              progress: progress.progress,
+              time: progress.time,
+              message: progress.message,
+            });
+          },
+        }
+      );
+
+      return {
+        success: result.success,
+        outputFile: result.outputFile,
+        speedMultiplier: 1,
+        originalFrames: result.frameCount,
+        inputFormat: "hls",
+      };
+    } catch (error: any) {
+      logger.error("HLS finalization failed", { error: error.message });
+      throw new VideoError(`HLS finalization failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate video from frame sequence (legacy capture)
+   */
+  private async generateFromFrames(
     sessionFolder: string,
     musicPath?: string,
     options: VideoGenerationOptions = {}
@@ -277,7 +392,7 @@ export class VideoManager {
     let outputDir = store.get("outputDirectory") || app.getPath("videos");
     outputDir = await this.ensureOutputDirectory(outputDir);
     
-    logger.info("Starting video generation", {
+    logger.info("Generating from frames", {
       sessionFolder,
       outputDir,
       hasMusic: !!musicPath,

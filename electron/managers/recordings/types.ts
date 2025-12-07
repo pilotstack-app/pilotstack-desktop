@@ -6,7 +6,7 @@
  * Type definitions for the recordings manager.
  */
 
-import type { Recording, RecordingStatus } from "../../config/types";
+import type { Recording, RecordingStatus, SessionMetrics } from "../../config/types";
 
 /**
  * Valid status transitions
@@ -39,7 +39,11 @@ export interface RecordingData {
   pasteEventCount?: number;
   fileSize?: number;
   status?: RecordingStatus;
-  keyboardStats?: any; // Optional keyboard stats for cloud upload
+  // Structured metrics from MetricsAggregator
+  metrics?: SessionMetrics | null;
+  // Phase 5: Project assignment
+  projectId?: string | null;
+  projectName?: string | null;
 }
 
 /**

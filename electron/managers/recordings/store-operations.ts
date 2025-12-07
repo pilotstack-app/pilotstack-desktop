@@ -95,6 +95,11 @@ export function addRecording(recordingData: RecordingData): Recording {
     cloudUrl: null,
     connectedUserId: null,
     uploadCheckpoint: null,
+    // Structured metrics
+    metrics: recordingData.metrics || null,
+    // Phase 5: Project assignment
+    projectId: recordingData.projectId || null,
+    projectName: recordingData.projectName || null,
   };
 
   const recordings = getAllRecordings();

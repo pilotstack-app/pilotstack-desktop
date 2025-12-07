@@ -4,10 +4,12 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { SourceSelector } from "../components/SourceSelector";
 import { RecordingControls } from "../components/RecordingControls";
 import { RecordingStats } from "../components/RecordingStats";
+import { ProjectSelector } from "../components/ProjectSelector";
 import type {
   ScreenSource,
   FrameUpdateData,
   CaptureErrorData,
+  ProjectSelection,
 } from "../types/electron";
 
 interface RecordingViewProps {
@@ -37,6 +39,10 @@ export function RecordingView({
   const [avgFrameSize, setAvgFrameSize] = useState<string | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectSelection>({
+    projectId: null,
+    projectName: null,
+  });
 
   // Sync recording state on mount (critical for page refresh during recording)
   useEffect(() => {
@@ -272,7 +278,7 @@ export function RecordingView({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 overflow-y-auto scroll-container"
+            className="flex-1 overflow-y-auto scroll-container space-y-4"
           >
             <SourceSelector
               selectedSource={selectedSource}
@@ -281,9 +287,28 @@ export function RecordingView({
                 setStartError(null);
               }}
             />
+            
+            {/* Project Selector - Phase 5 */}
+            {selectedSource && (
+              <div className="px-1">
+                <ProjectSelector
+                  selectedSource={selectedSource}
+                  onProjectChange={setSelectedProject}
+                />
+              </div>
+            )}
           </motion.div>
         ) : (
           <div className="flex-1 overflow-y-auto scroll-container">
+            {/* Project indicator during recording */}
+            {selectedProject.projectId && (
+              <div className="mb-4 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-chrono-accent/10 border border-chrono-accent/30">
+                <span className="text-xs text-chrono-muted">Recording to:</span>
+                <span className="text-sm font-medium text-chrono-accent">
+                  {selectedProject.projectName}
+                </span>
+              </div>
+            )}
             <RecordingStats
               frameCount={frameCount}
               estimatedDuration={estimatedDuration}

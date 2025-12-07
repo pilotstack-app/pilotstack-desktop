@@ -64,6 +64,43 @@ export const store = new Store<AppSettings>({
 });
 
 /**
+ * Project settings store (Phase 5: Desktop App Integration)
+ * 
+ * Stores project-related preferences like last used project
+ * and window title patterns for auto-detection.
+ */
+export interface ProjectSettings {
+  lastUsedProjectId: string | null;
+  lastUsedProjectName: string | null;
+  windowPatterns: Array<{
+    projectId: string;
+    pattern: string;
+    priority: number;
+  }>;
+}
+
+export const projectStore = new Store<ProjectSettings>({
+  name: "project-settings",
+  encryptionKey: "pilotstack-project-key-v1",
+  schema: {
+    lastUsedProjectId: { type: ["string", "null"], default: null },
+    lastUsedProjectName: { type: ["string", "null"], default: null },
+    windowPatterns: {
+      type: "array",
+      default: [],
+      items: {
+        type: "object",
+        properties: {
+          projectId: { type: "string" },
+          pattern: { type: "string" },
+          priority: { type: "number" },
+        },
+      },
+    },
+  },
+});
+
+/**
  * Session recovery store
  * 
  * Reference: ARCHITECTURE_DOCUMENTATION.md - Core Systems §6 - Session Recovery

@@ -363,6 +363,34 @@ const pilotstackAPI: pilotstackAPI = {
   // Video folder access request
   onRequestFolderAccess: (callback: (data: { path: string }) => void) =>
     createEventListener("video:request-folder-access", callback),
+
+  // Projects (Phase 5: Desktop App Integration)
+  getProjects: () =>
+    ipcRenderer.invoke("projects:list"),
+
+  refreshProjects: () =>
+    ipcRenderer.invoke("projects:refresh"),
+
+  getProjectSelection: () =>
+    ipcRenderer.invoke("projects:getSelection"),
+
+  setProjectSelection: (selection: { projectId: string | null; projectName: string | null }) =>
+    ipcRenderer.invoke("projects:setSelection", selection),
+
+  autoDetectProject: (sourceTitle: string) =>
+    ipcRenderer.invoke("projects:autoDetect", { sourceTitle }),
+
+  addProjectPattern: (projectId: string, pattern: string, priority?: number) =>
+    ipcRenderer.invoke("projects:addPattern", { projectId, pattern, priority: priority ?? 50 }),
+
+  removeProjectPattern: (projectId: string, pattern: string) =>
+    ipcRenderer.invoke("projects:removePattern", { projectId, pattern }),
+
+  getProjectPatterns: () =>
+    ipcRenderer.invoke("projects:getPatterns"),
+
+  clearProjectCache: () =>
+    ipcRenderer.invoke("projects:clearCache"),
 };
 
 /**

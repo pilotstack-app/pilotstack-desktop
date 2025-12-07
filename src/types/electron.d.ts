@@ -407,6 +407,9 @@ export interface Recording {
   cloudRecordingId: string | null;
   cloudUrl: string | null;
   connectedUserId: string | null;
+  // Project assignment (Phase 5)
+  projectId: string | null;
+  projectName: string | null;
 }
 
 // Recording data for adding new recording
@@ -434,6 +437,9 @@ export interface RecordingData {
     scrollEvents: number;
     typingIntensity: number;
   };
+  // Project assignment (Phase 5)
+  projectId?: string | null;
+  projectName?: string | null;
 }
 
 // Recordings API responses
@@ -489,6 +495,47 @@ export interface UploadProgressEvent extends NormalizedProgress {}
 
 export interface UploadCompressionProgressEvent {
   progress: number;
+}
+
+// =============================================================================
+// Projects (Phase 5: Desktop App Integration)
+// =============================================================================
+
+export type ProjectVisibility = "PRIVATE" | "UNLISTED" | "PUBLIC";
+
+export interface Project {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  totalDuration: number;
+  totalRecordings: number;
+  verifiedDuration: number;
+  visibility: ProjectVisibility;
+  slug: string | null;
+  isArchived: boolean;
+  pinnedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectsListResult {
+  success: boolean;
+  projects: Project[];
+  error?: string;
+}
+
+export interface ProjectSelection {
+  projectId: string | null;
+  projectName: string | null;
+}
+
+export interface ProjectPattern {
+  projectId: string;
+  pattern: string;
+  priority: number;
 }
 
 export interface pilotstackAPI {
@@ -665,6 +712,17 @@ export interface pilotstackAPI {
 
   // Video folder access request
   onRequestFolderAccess: (callback: (data: { path: string }) => void) => () => void;
+
+  // Projects (Phase 5: Desktop App Integration)
+  getProjects: () => Promise<ProjectsListResult>;
+  refreshProjects: () => Promise<ProjectsListResult>;
+  getProjectSelection: () => Promise<ProjectSelection>;
+  setProjectSelection: (selection: ProjectSelection) => Promise<{ success: boolean }>;
+  autoDetectProject: (sourceTitle: string) => Promise<ProjectSelection>;
+  addProjectPattern: (projectId: string, pattern: string, priority?: number) => Promise<{ success: boolean }>;
+  removeProjectPattern: (projectId: string, pattern: string) => Promise<{ success: boolean }>;
+  getProjectPatterns: () => Promise<{ patterns: ProjectPattern[] }>;
+  clearProjectCache: () => Promise<{ success: boolean }>;
 }
 
 export interface PlatformAPI {

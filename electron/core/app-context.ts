@@ -22,6 +22,9 @@ import { ActivityManager } from "../managers/activity-manager";
 import { RecordingsManager } from "../managers/recordings";
 import { UpdateManager } from "../managers/updater-manager";
 
+// Import new capture engine
+import { CaptureService } from "../managers/capture-engine/capture-service";
+
 // Import monitors
 import { ClipboardMonitor } from "../monitors/clipboard-monitor";
 import { KeyboardMonitor } from "../monitors/keyboard-monitor";
@@ -44,6 +47,7 @@ export class AppContext {
   
   // Managers - lazy initialized
   private captureManager: CaptureManager | null = null;
+  private captureService: CaptureService | null = null; // New native capture engine
   private videoManager: VideoManager | null = null;
   private sessionManager: SessionManager | null = null;
   private activityManager: ActivityManager | null = null;
@@ -77,6 +81,7 @@ export class AppContext {
   /**
    * Get capture manager (lazy initialization)
    * 
+   * @deprecated Use getCaptureService() for new native capture engine
    * Reference: ARCHITECTURE_DOCUMENTATION.md - Core Systems §1 - Capture System
    */
   getCaptureManager(): CaptureManager {
@@ -84,6 +89,25 @@ export class AppContext {
       this.captureManager = new CaptureManager(this);
     }
     return this.captureManager;
+  }
+
+  /**
+   * Get capture service (lazy initialization)
+   * 
+   * New native FFmpeg-based capture engine for better performance.
+   * Reference: ARCHITECTURE_DOCUMENTATION.md - Core Systems §1 - Capture System
+   */
+  getCaptureService(): CaptureService {
+    if (!this.captureService) {
+      this.captureService = new CaptureService(this);
+      // Wire up activity monitors
+      this.captureService.setActivityMonitors({
+        keyboardMonitor: this.getKeyboardMonitor(),
+        clipboardMonitor: this.getClipboardMonitor(),
+        activityManager: this.getActivityManager(),
+      });
+    }
+    return this.captureService;
   }
 
   /**
@@ -255,6 +279,10 @@ export class AppContext {
         cleanupPromises.push(manager.cleanup());
       }
     }
+    // Cleanup new capture service
+    if (this.captureService) {
+      cleanupPromises.push(this.captureService.emergencyStop());
+    }
     if (this.videoManager) {
       const manager = this.videoManager as any;
       if (typeof manager.cleanup === "function") {
@@ -295,6 +323,7 @@ export class AppContext {
 
     // Clear all references
     this.captureManager = null;
+    this.captureService = null;
     this.videoManager = null;
     this.sessionManager = null;
     this.activityManager = null;

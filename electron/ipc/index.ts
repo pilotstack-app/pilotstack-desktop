@@ -17,6 +17,7 @@ import { registerAuthHandlers } from "./auth-handlers";
 import { registerRecordingsHandlers } from "./recordings-handlers";
 import { registerCloudHandlers } from "./cloud-handlers";
 import { registerAppHandlers } from "./app-handlers";
+import { registerProjectHandlers } from "./project-handlers";
 
 /**
  * Register all IPC handlers
@@ -30,6 +31,7 @@ export function registerAllHandlers(context: AppContext): void {
   registerRecordingsHandlers(context);
   registerCloudHandlers(context);
   registerAppHandlers(context);
+  registerProjectHandlers(context);
 }
 
 /**
