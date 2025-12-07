@@ -254,7 +254,9 @@ export function registerProjectHandlers(_context: AppContext): void {
   );
 
   // Auto-detect project from source title
-  ipcMain.handle("projects:autoDetect", (_event, { sourceTitle }: { sourceTitle: string }) => {
+  ipcMain.handle("projects:autoDetect", async (_event, { sourceTitle }: { sourceTitle: string }) => {
+    // Ensure projects are loaded before attempting auto-detection
+    await getProjects();
     return autoDetectProject(sourceTitle);
   });
 
