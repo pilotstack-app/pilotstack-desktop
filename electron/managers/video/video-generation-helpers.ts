@@ -249,10 +249,12 @@ export async function runFrameBasedGeneration(
         }
 
         try {
-          await fs.promises.rm(sessionFolder, {
-            recursive: true,
-            force: true,
-          });
+          // DISABLED: Don't delete session folder so metrics.json is preserved for upload
+          // await fs.promises.rm(sessionFolder, {
+          //   recursive: true,
+          //   force: true,
+          // });
+          logger.info("Preserving session folder for metrics", { sessionFolder });
         } catch (_e) {
           // Cleanup errors are non-critical
         }

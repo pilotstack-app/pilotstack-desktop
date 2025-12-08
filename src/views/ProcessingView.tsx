@@ -21,7 +21,7 @@ import type {
 interface ProcessingViewProps {
   sessionFolder: string;
   totalFrames: number;
-  onComplete: (outputFile: string, metadata?: SessionMetadata) => void;
+  onComplete: (outputFile: string, sessionFolder: string, metadata?: SessionMetadata) => void;
   onCancel: () => void;
 }
 
@@ -344,9 +344,10 @@ export function ProcessingView({
         setStatus("success");
         setProgress(100);
         setStatusText("Complete!");
-        // Pass metadata to CompletedView for potential upload
+        // Pass metadata and sessionFolder to CompletedView for potential upload
+        // sessionFolder is needed so upload service can find metrics.json
         setTimeout(
-          () => onComplete(result.outputFile, sessionMetadata || undefined),
+          () => onComplete(result.outputFile, sessionFolder, sessionMetadata || undefined),
           500,
         );
       } else {

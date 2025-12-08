@@ -8,6 +8,8 @@
  * Maps to: main.js capture IPC handlers section
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { desktopCapturer } from "electron";
 import { AppContext } from "../core/app-context";
 import { sanitizeForIPC } from "../utils/ipc-sanitizer";
@@ -26,6 +28,122 @@ function getErrorMessage(error: unknown): string {
     return error;
   }
   return "Unknown error occurred";
+}
+
+/**
+ * Write metrics.json to session folder for frame-based capture
+ * This ensures activity stats (WPM, keystrokes, mouse clicks, etc.) are available for upload
+ */
+async function writeMetricsJson(
+  sessionFolder: string,
+  keyboardStats: any,
+  clipboardStats: any,
+  activityStats: any
+): Promise<void> {
+  try {
+    const now = Date.now();
+    const sessionId = path.basename(sessionFolder);
+    
+    // Build keyboard metrics
+    const keyboard = {
+      estimatedKeystrokes: keyboardStats?.estimatedKeystrokes || 0,
+      keyboardActiveTime: keyboardStats?.keyboardActiveTime || 0,
+      estimatedWordsTyped: keyboardStats?.estimatedWordsTyped || 0,
+      typingBurstCount: keyboardStats?.typingBurstCount || 0,
+      averageWPM: keyboardStats?.averageWPM || 0,
+      peakWPM: keyboardStats?.peakWPM || 0,
+      shortcutEstimate: keyboardStats?.shortcutEstimate || 0,
+      typingIntensity: keyboardStats?.typingIntensity || 0,
+    };
+
+    // Build mouse metrics
+    const mouse = {
+      mouseClicks: keyboardStats?.mouseClicks || 0,
+      mouseDistance: keyboardStats?.mouseDistance || 0,
+      scrollEvents: keyboardStats?.scrollEvents || 0,
+    };
+
+    // Build clipboard metrics
+    const pasteEvents = Array.isArray(clipboardStats) ? clipboardStats : [];
+    const clipboard = {
+      pasteEventCount: pasteEvents.length,
+      totalPastedCharacters: pasteEvents.reduce((sum: number, e: any) => sum + (e.size || 0), 0),
+      largePasteCount: pasteEvents.filter((e: any) => e.isLarge).length,
+      pasteTimestamps: pasteEvents.map((e: any) => e.timestamp),
+    };
+
+    // Calculate activity stats
+    const totalDuration = activityStats?.totalDuration || keyboardStats?.sessionDuration || 0;
+    const activeDuration = keyboard.keyboardActiveTime || totalDuration;
+    const activeMinutes = activeDuration / 60;
+    const keystrokesPerMinute = activeMinutes > 0 ? Math.round(keyboard.estimatedKeystrokes / activeMinutes) : 0;
+    const clicksPerMinute = activeMinutes > 0 ? Math.round(mouse.mouseClicks / activeMinutes) : 0;
+    const totalInputEvents = keyboardStats?.totalInputEvents || (keyboard.estimatedKeystrokes + mouse.mouseClicks);
+    const inputEventsPerMinute = activeMinutes > 0 ? Math.round(totalInputEvents / activeMinutes) : 0;
+    const activityRatio = totalDuration > 0 ? activeDuration / totalDuration : 0;
+
+    // Verification indicators
+    const hasNaturalTypingPattern = keyboard.typingBurstCount >= 3;
+    const hasSuspiciousWPM = keyboard.peakWPM > 200;
+    const totalTypedChars = keyboard.estimatedKeystrokes;
+    const totalPastedChars = clipboard.totalPastedCharacters;
+    const totalChars = totalTypedChars + totalPastedChars;
+    const hasExcessivePasting = totalChars > 100 && totalPastedChars / totalChars > 0.3;
+
+    // Calculate activity score
+    let activityScore = 100;
+    if (activityRatio < 0.2 && totalDuration > 600) activityScore -= 20;
+    if (hasSuspiciousWPM) activityScore -= 15;
+    if (hasExcessivePasting) activityScore -= 20;
+    if (hasNaturalTypingPattern) activityScore += 10;
+    activityScore = Math.max(0, Math.min(100, activityScore));
+
+    // Build the metrics object
+    const metrics = {
+      version: 1,
+      sessionId,
+      startTime: activityStats?.startTime || (now - totalDuration * 1000),
+      endTime: now,
+      lastUpdated: now,
+      input: {
+        keyboard,
+        mouse,
+        clipboard,
+        totalInputEvents,
+        sessionDuration: totalDuration,
+        lastActivityTime: keyboardStats?.lastActivityTime || null,
+      },
+      activity: {
+        totalDuration: Math.round(totalDuration),
+        activeDuration: Math.round(activeDuration),
+        idleDuration: Math.round(totalDuration - activeDuration),
+        activityRatio: Math.round(activityRatio * 100) / 100,
+        keystrokesPerMinute,
+        clicksPerMinute,
+        inputEventsPerMinute,
+        hasNaturalTypingPattern,
+        hasSuspiciousWPM,
+        hasExcessivePasting,
+        activityScore,
+      },
+    };
+
+    // Write to file
+    const metricsPath = path.join(sessionFolder, "metrics.json");
+    await fs.promises.writeFile(metricsPath, JSON.stringify(metrics, null, 2), "utf-8");
+    
+    logger.info("Metrics written to session folder", { 
+      metricsPath,
+      hasKeyboard: keyboard.estimatedKeystrokes > 0,
+      hasMouse: mouse.mouseClicks > 0,
+      hasClipboard: clipboard.pasteEventCount > 0,
+    });
+  } catch (error) {
+    logger.warn("Failed to write metrics.json", { 
+      sessionFolder,
+      error: getErrorMessage(error) 
+    });
+  }
 }
 
 /**
@@ -147,6 +265,20 @@ export function registerCaptureHandlers(context: AppContext): void {
 
       const result = await Promise.race([stopPromise, timeoutPromise]);
       trayManager.updateTray();
+
+      // Write metrics.json to session folder for upload service to find (fire and forget - don't block stop flow)
+      // This is critical for activity stats (WPM, keystrokes, mouse clicks) to be saved to database
+      const resultWithFolder = result as { sessionFolder?: string | null };
+      if (resultWithFolder?.sessionFolder) {
+        writeMetricsJson(
+          resultWithFolder.sessionFolder,
+          keyboardStats,
+          pasteEvents,
+          activityStats
+        ).catch((err) => {
+          logger.warn("Failed to write metrics.json (non-blocking)", { error: getErrorMessage(err) });
+        });
+      }
 
       // Sanitize the result object for IPC serialization
       const sanitizedResult = sanitizeForIPC(result);

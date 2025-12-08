@@ -641,12 +641,12 @@ export class VideoManager {
               size: stats.size,
             });
 
-            // Cleanup session folder
-            try {
-              await fs.promises.rm(sessionFolder, { recursive: true, force: true });
-            } catch {
-              // Ignore cleanup errors
-            }
+            // Cleanup session folder - DISABLED to keep metrics.json for upload
+            // try {
+            //   await fs.promises.rm(sessionFolder, { recursive: true, force: true });
+            // } catch {
+            //   // Ignore cleanup errors
+            // }
 
             resolve({
               success: true,

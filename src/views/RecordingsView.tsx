@@ -593,15 +593,17 @@ const RecordingCard = forwardRef<HTMLDivElement, RecordingCardProps>(function Re
                 Available on pilotstack
               </span>
             </div>
-            <a
-              href={`https://pilotstack.app/recordings/${recording.cloudRecordingId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-[10px] sm:text-xs text-chrono-muted hover:text-white transition-colors group"
+            <button
+              onClick={() => {
+                window.pilotstack.openConnectUrl({
+                  url: `https://pilotstack.app/recordings/${recording.cloudRecordingId}`,
+                });
+              }}
+              className="flex items-center gap-1.5 text-[10px] sm:text-xs text-chrono-muted hover:text-white transition-colors group w-full text-left"
             >
               <span className="truncate">pilotstack.app/recordings/{recording.cloudRecordingId.slice(0, 8)}...</span>
               <ExternalLink className="w-3 h-3 flex-shrink-0 group-hover:text-chrono-accent" />
-            </a>
+            </button>
           </div>
         )}
 

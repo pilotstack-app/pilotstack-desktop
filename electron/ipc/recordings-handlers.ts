@@ -11,6 +11,7 @@
 import { shell, app, dialog } from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import type { SessionMetrics } from "../config/types";
 import { AppContext } from "../core/app-context";
 import { secureAuthManager, store } from "../config/store";
 import { logger } from "../utils/logger";
@@ -33,6 +34,37 @@ function getErrorMessage(error: unknown): string {
     return error;
   }
   return "Unknown error occurred";
+}
+
+/**
+ * Load metrics.json from session folder if it exists
+ * This must be done when adding the recording because the session folder
+ * may be deleted after video generation (to clean up frame files)
+ */
+function loadMetricsFromSessionFolder(framesDir: string | null | undefined): SessionMetrics | null {
+  if (!framesDir) return null;
+  
+  const metricsPath = path.join(framesDir, "metrics.json");
+  
+  try {
+    if (fs.existsSync(metricsPath)) {
+      const data = fs.readFileSync(metricsPath, "utf-8");
+      const metrics = JSON.parse(data) as SessionMetrics;
+      logger.info("Loaded metrics from session folder", { 
+        framesDir,
+        hasInput: !!metrics.input,
+        hasActivity: !!metrics.activity,
+      });
+      return metrics;
+    }
+  } catch (error) {
+    logger.warn("Failed to load metrics from session folder", { 
+      framesDir, 
+      error: getErrorMessage(error) 
+    });
+  }
+  
+  return null;
 }
 
 /**
@@ -82,6 +114,14 @@ export function registerRecordingsHandlers(context: AppContext): void {
       return { success: false, error: "Recordings manager not initialized" };
     }
     try {
+      // IMPORTANT: Load metrics from session folder NOW before it gets deleted
+      // The session folder (framesDir) contains metrics.json with all activity stats
+      // (WPM, keystrokes, mouse clicks, etc.) but may be cleaned up after video generation
+      let metrics = recordingData.metrics as SessionMetrics | null | undefined;
+      if (!metrics && recordingData.framesDir) {
+        metrics = loadMetricsFromSessionFolder(recordingData.framesDir);
+      }
+
       // Convert the validated schema data to RecordingData type
       // The schema is more permissive with passthrough(), so we need to cast
       const data = {
@@ -97,7 +137,7 @@ export function registerRecordingsHandlers(context: AppContext): void {
         pasteEventCount: recordingData.pasteEventCount,
         fileSize: recordingData.fileSize,
         status: recordingData.status,
-        metrics: recordingData.metrics as import("../config/types").SessionMetrics | null | undefined,
+        metrics: metrics || null,
         // Phase 5: Project assignment
         projectId: (recordingData as any).projectId || null,
         projectName: (recordingData as any).projectName || null,

@@ -89,13 +89,13 @@ export async function finalizeFastHLS(
             return;
           }
 
-          // Clean up session folder
+          // Clean up session folder - DISABLED for metrics preservation
           try {
-            await fs.promises.rm(sessionFolder, {
-              recursive: true,
-              force: true,
-            });
-            logger.info("Cleaned up streaming session folder", {
+            // await fs.promises.rm(sessionFolder, {
+            //   recursive: true,
+            //   force: true,
+            // });
+            logger.info("Preserving streaming session folder", {
               sessionFolder,
             });
           } catch (cleanupError: any) {
@@ -260,13 +260,13 @@ export async function runHLSFinalizationWithOverlays(
             return;
           }
 
-          // Clean up session folder
+          // Clean up session folder - DISABLED for metrics preservation
           try {
-            await fs.promises.rm(sessionFolder, {
-              recursive: true,
-              force: true,
-            });
-            logger.info("Cleaned up streaming session folder", {
+            // await fs.promises.rm(sessionFolder, {
+            //   recursive: true,
+            //   force: true,
+            // });
+            logger.info("Preserving streaming session folder", {
               sessionFolder,
             });
           } catch (cleanupError: any) {

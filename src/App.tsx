@@ -186,16 +186,20 @@ function App() {
    * Handle video completion - save to recordings library
    */
   const handleVideoComplete = useCallback(
-    async (outputFile: string, metadata?: SessionMetadata) => {
+    async (outputFile: string, sessionFolder: string, metadata?: SessionMetadata) => {
       setSessionData((prev) =>
         prev ? { ...prev, outputFile, metadata } : null,
       );
 
       // Save to recordings library with keyboard stats and project info
+      // Use sessionFolder passed directly from ProcessingView to avoid stale closure issues
       try {
         const result = await window.pilotstack.addRecording({
-          sessionId: sessionData?.sessionFolder?.split("/").pop() || `session_${Date.now()}`,
+          sessionId: sessionFolder?.split("/").pop() || `session_${Date.now()}`,
           videoPath: outputFile,
+          // IMPORTANT: Include framesDir (session folder) so upload service can find metrics.json
+          // This contains all activity stats (WPM, keystrokes, mouse clicks, etc.)
+          framesDir: sessionFolder || null,
           title: `Recording ${new Date().toLocaleDateString()}`,
           duration: metadata?.totalDuration || 0,
           activeDuration: metadata?.activeDuration || 0,
