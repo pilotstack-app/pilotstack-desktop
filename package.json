@@ -5,9 +5,9 @@
   "description": "Open-source desktop app for pilotstack - Screen Recording & Timelapse Creator",
   "author": {
     "name": "pilotstack Team",
-    "email": "team@pilotstack.app"
+    "email": "pilotstack.app@gmail.com"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "main": "electron-dist/main.js",
   "homepage": "./",
   "packageManager": "pnpm@9.14.2",
@@ -206,7 +206,7 @@
       ],
       "icon": "assets/icon_512.png",
       "category": "Utility;AudioVideo;Video",
-      "maintainer": "pilotstack Team <team@pilotstack.app>",
+      "maintainer": "pilotstack Team <pilotstack.app@gmail.com>",
       "vendor": "pilotstack",
       "synopsis": "Screen Recording & Timelapse Creator",
       "description": "pilotstack Desktop - Record your creative workflow and generate beautiful timelapse videos to prove your work.",

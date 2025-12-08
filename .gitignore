@@ -44,7 +44,3 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
-
-# Documentation for now except for the README.md
-*.md 
-!README.md

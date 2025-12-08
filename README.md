@@ -10,11 +10,9 @@
 
 <p align="center">
   <a href="https://github.com/pilotstack-app/pilotstack-desktop/releases">
-    <img src="https://img.shields.io/github/v/release/pilotstack-app/pilotstack-desktop" alt="Release">
+    <img src="https://img.shields.io/github/v/release/pilotstack-app/pilotstack-desktop?include_prereleases&style=flat-square" alt="Release">
   </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/pilotstack-app/pilotstack-desktop" alt="License">
-  </a>
+  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
   <a href="https://github.com/pilotstack-app/pilotstack-desktop/actions/workflows/ci.yml">
     <img src="https://github.com/pilotstack-app/pilotstack-desktop/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
@@ -48,14 +46,31 @@ Download the latest release for your platform from the [Releases page](https://g
 
 ### Verify Your Download
 
-All releases include SHA256 checksums and SBOM (Software Bill of Materials). Verify your download:
+To ensure your download hasn't been tampered with, verifying the checksum is a security best practice.
 
+1.  **Download the files**: Get both the installer (e.g., `.dmg`) and the `checksums.txt` file from the [Releases page](https://github.com/pilotstack-app/pilotstack-desktop/releases).
+2.  **Open Terminal**: Open your terminal (e.g., Terminal.app on macOS).
+3.  **Navigate to download folder**:
+    ```bash
+    cd ~/Downloads
+    ```
+4.  **Run the verification command**:
+
+**macOS:**
 ```bash
-# macOS/Linux - Check against checksums.txt
-sha256sum -c checksums.txt
+# This will calculate the hash of your downloaded file
+shasum -a 256 pilotstack-1.0.0-mac-arm64.dmg
+# Compare the output with the hash in checksums.txt
+```
 
-# Or manually verify a specific file
-sha256sum pilotstack-*-mac-arm64.dmg
+**Windows (PowerShell):**
+```powershell
+Get-FileHash .\pilotstack-1.0.0-win-x64.exe -Algorithm SHA256
+```
+
+**Linux:**
+```bash
+sha256sum -c checksums.txt
 ```
 
 Review the `sbom.spdx.json` file included with each release for the complete list of dependencies.
@@ -138,7 +153,7 @@ See [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for the detailed security assessment 
 
 **Please do not open public issues for security vulnerabilities.**
 
-Report security concerns privately to: **security@pilotstack.app**
+Report security concerns privately to: **pilotstack.app@gmail.com**
 
 We will respond within 48 hours and work with you to address the issue.
 
@@ -206,7 +221,9 @@ We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)** - see the [LICENSE](LICENSE) file for details.
+
+This license ensures that the code remains open and free, and that any modifications or network services (SaaS) built using this code must also be open-sourced. This prevents proprietary "wrapping" of the software while maintaining its open nature.
 
 ---
 

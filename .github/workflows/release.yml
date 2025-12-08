@@ -267,6 +267,15 @@ jobs:
           
           echo "✅ macOS upload complete"
 
+      - name: Upload artifacts for GitHub Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-artifacts
+          path: |
+            release/*.dmg
+            release/*.zip
+          retention-days: 1
+
   # ===========================================================================
   # Windows Build & Upload
   # ===========================================================================
@@ -362,6 +371,15 @@ jobs:
           }
           
           Write-Host "✅ Windows upload complete"
+
+      - name: Upload artifacts for GitHub Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: |
+            release/*.exe
+            release/*.zip
+          retention-days: 1
 
   # ===========================================================================
   # Linux Build & Upload
@@ -478,6 +496,15 @@ jobs:
           
           echo "✅ Linux upload complete"
 
+      - name: Upload artifacts for GitHub Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            release/*.AppImage
+            release/*.deb
+          retention-days: 1
+
   # ===========================================================================
   # Generate SBOM for security/compliance
   # ===========================================================================
@@ -536,6 +563,24 @@ jobs:
         with:
           name: sbom
           path: artifacts/
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-artifacts
+          path: artifacts/
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-artifacts
+          path: artifacts/
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-artifacts
+          path: artifacts/
       
       - name: Create checksums file
         env:
@@ -573,6 +618,11 @@ jobs:
           files: |
             artifacts/sbom.spdx.json
             artifacts/checksums.txt
+            artifacts/*.dmg
+            artifacts/*.exe
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/*.zip
           body: |
             ## 📥 Download
             
