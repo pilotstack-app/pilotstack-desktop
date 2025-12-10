@@ -1,0 +1,21 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://github.com/pilotstack-app/pilotstack-desktop/discussions/new?category=q-a
+    about: Ask questions and get help from the community
+  
+  - name: 💡 Feature Discussions
+    url: https://github.com/pilotstack-app/pilotstack-desktop/discussions/new?category=ideas
+    about: Discuss new ideas and feature requests with the community
+  
+  - name: 📚 Documentation
+    url: https://docs.pilotstack.app
+    about: Read the official documentation
+  
+  - name: 🔒 Security Vulnerability
+    url: mailto:pilotstack.app@gmail.com
+    about: Report security issues privately via email (DO NOT create public issues)
+  
+  - name: 🌐 pilotstack Web Platform
+    url: https://pilotstack.app
+    about: Visit the pilotstack web platform

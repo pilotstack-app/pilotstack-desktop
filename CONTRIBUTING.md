@@ -218,17 +218,45 @@ export function calculateScore(metrics: ActivityMetrics): number {
 
 ## Pull Request Process
 
-### Verified Work Session
+### Verified Work Session (Required)
 
-All Pull Requests must include a **Verified Work Session** badge to prove authorship and effort.
+All Pull Requests **must** include a **Verified Work Session** badge from your pilotstack account to prove authorship and effort.
 
-1. Record your coding session using pilotstack Desktop.
-2. Once finished, upload the recording to pilotstack.app.
-3. On the recording page, click "Add to GitHub PR".
-4. Copy the Markdown snippet (Full format recommended).
-5. Paste it at the top of your Pull Request description.
+**How to add your badge:**
 
-This helps maintain the integrity of our open-source community by verifying that contributions are made by real humans with actual effort.
+1. **Record** - Use pilotstack Desktop to record your entire coding session while working on this contribution
+2. **Upload** - Upload the recording to your account at [pilotstack.app](https://pilotstack.app)
+3. **Copy Badge** - On your recording page, copy the complete verification badge (including the stats table)
+4. **Paste** - Add it at the top of your Pull Request description
+
+**Example badge format:**
+
+```markdown
+## 🛡️ Verified Work Session
+
+[![pilotstack Verified](https://pilotstack.app/api/badges/YOUR_RECORDING_ID?style=flat&theme=github)](https://pilotstack.app/r/YOUR_RECORDING)
+
+| Metric | Value |
+|--------|-------|
+| Status | ✅ Verified |
+| Focus Time | 2h 15m |
+| Score | 85% |
+| Keystrokes | 2,450 |
+| Words Typed | ~490 |
+| Peak WPM | 72 |
+| Avg WPM | 65 |
+| Mouse Clicks | 156 |
+| Typing Bursts | 45 |
+| Paste Events | 3 |
+
+> 🔒 **[Verify these stats →](https://pilotstack.app/r/YOUR_RECORDING)** - Click to see the full verified recording.
+
+---
+
+*Verified by [pilotstack](https://pilotstack.app) - The Strava for Work*
+```
+
+This requirement helps maintain the integrity of our open-source community by verifying that contributions are made by real humans with documented effort.
 
 ### Before Submitting
 
