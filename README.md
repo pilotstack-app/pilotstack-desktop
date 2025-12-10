@@ -350,7 +350,7 @@ All Pull Requests **must** include a **Verified Work Session** badge from your p
 
 **Example of required badge format:**
 
-```markdown
+
 ## 🛡️ Verified Work Session
 
 [![pilotstack Verified](https://pilotstack.app/api/badges/cmiwyinfk0003l404smvupdyy?style=flat&theme=github)](https://pilotstack.app/r/recording-1282025)
@@ -373,7 +373,14 @@ All Pull Requests **must** include a **Verified Work Session** badge from your p
 ---
 
 *Verified by [pilotstack](https://pilotstack.app) - The Strava for Work*
-```
+
+
+OR 
+
+[![pilotstack Verified](https://pilotstack.app/api/badges/cmiwyinfk0003l404smvupdyy?style=flat&theme=github)](https://pilotstack.app/r/recording-1282025) 0m of verified work
+
+> [🔒 Verify stats](https://pilotstack.app/r/recording-1282025)
+
 
 Read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
 
